@@ -1,21 +1,22 @@
 use ggez::glam::Vec2;
-use ggez::graphics::Color;
-use ggez::graphics::{Canvas, DrawMode, Mesh, Rect};
+use ggez::graphics::{Canvas, DrawMode, Mesh, MeshBuilder, Rect};
 use ggez::{Context, GameResult};
 
 use crate::ui::camera::Camera;
 
-pub const TILE_SIZE: f32 = 32.0;
+pub const TILE_SIZE: f32 = 24.0;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum Tile {
-	Grass,
+	GrassEven,
+	GrassOdd,
 }
 
 impl Tile {
-	pub fn color(self) -> Color {
+	pub fn color(self) -> ggez::graphics::Color {
 		match self {
-			Tile::Grass => Color::from_rgb(60, 180, 60),
+			Tile::GrassEven => ggez::graphics::Color::from_rgb(50, 160, 50),
+			Tile::GrassOdd => ggez::graphics::Color::from_rgb(60, 180, 60),
 		}
 	}
 }
@@ -27,11 +28,19 @@ pub struct TileMap {
 }
 
 impl TileMap {
-	pub fn new(width: usize, height: usize, default: Tile) -> Self {
+	pub fn new(width: usize, height: usize) -> Self {
 		Self {
 			width,
 			height,
-			tiles: vec![default; width * height],
+			tiles: (0..width * height)
+				.map(|i| {
+					if i % 2 == 0 {
+						Tile::GrassEven
+					} else {
+						Tile::GrassOdd
+					}
+				})
+				.collect(),
 		}
 	}
 
@@ -66,7 +75,8 @@ impl TileMap {
 	}
 
 	pub fn draw(&self, ctx: &mut Context, canvas: &mut Canvas, camera: &Camera) -> GameResult {
-		let half = Vec2::from(ctx.gfx.drawable_size()) / 2.0;
+		let screen_size = Vec2::from(ctx.gfx.drawable_size());
+		let half = screen_size / 2.0;
 
 		let left = camera.position.x - half.x;
 		let right = camera.position.x + half.x;
@@ -79,26 +89,29 @@ impl TileMap {
 		let start_y = (top / TILE_SIZE).floor() as i32;
 		let end_y = (bottom / TILE_SIZE).ceil() as i32;
 
+		let mut builder = MeshBuilder::new();
+
 		for y in start_y..end_y {
 			for x in start_x..end_x {
 				let Some(tile) = self.get(x, y) else {
 					continue;
 				};
 
-				let world_position = Vec2::new(x as f32 * TILE_SIZE, y as f32 * TILE_SIZE);
+				let screen_x = x as f32 * TILE_SIZE - camera.position.x + half.x;
 
-				let screen_position = camera.world_to_screen(ctx, world_position);
+				let screen_y = y as f32 * TILE_SIZE - camera.position.y + half.y;
 
-				let mesh = Mesh::new_rectangle(
-					ctx,
+				builder.rectangle(
 					DrawMode::fill(),
-					Rect::new(screen_position.x, screen_position.y, TILE_SIZE, TILE_SIZE),
+					Rect::new(screen_x, screen_y, TILE_SIZE, TILE_SIZE),
 					tile.color(),
 				)?;
-
-				canvas.draw(&mesh, Vec2::ZERO);
 			}
 		}
+
+		let mesh = Mesh::from_data(ctx, builder.build());
+
+		canvas.draw(&mesh, Vec2::ZERO);
 
 		Ok(())
 	}

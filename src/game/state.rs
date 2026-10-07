@@ -2,7 +2,7 @@ use ggez::graphics::{Canvas, Color, DrawMode, Mesh, Rect};
 use ggez::winit::keyboard::{Key, NamedKey};
 use ggez::{Context, GameResult};
 
-use crate::game::tile::{Tile, TileMap};
+use crate::game::tile::TileMap;
 use crate::game::view::{View, ViewAction};
 use crate::player::Player;
 use crate::ui::camera::Camera;
@@ -16,11 +16,7 @@ pub struct GameState {
 
 impl GameState {
 	pub fn new() -> Self {
-		let mut map = TileMap::new(50, 50, Tile::Grass);
-
-		for x in 5..15 {
-			map.set(x, 8, Tile::Grass);
-		}
+		let map = TileMap::new(49, 49);
 
 		let player = Player::default();
 
