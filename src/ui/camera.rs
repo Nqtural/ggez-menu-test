@@ -2,15 +2,13 @@ use ggez::glam::Vec2;
 
 pub struct Camera {
 	pub position: Vec2,
-	pub virtual_size: Vec2,
 	pub smoothing: f32,
 }
 
 impl Camera {
-	pub fn new(virtual_size: Vec2) -> Self {
+	pub fn new(position: Vec2) -> Self {
 		Self {
-			position: Vec2::ZERO,
-			virtual_size,
+			position,
 			smoothing: 10.0,
 		}
 	}
@@ -21,7 +19,10 @@ impl Camera {
 		self.position += (target - self.position) * t;
 	}
 
-	pub fn world_to_screen(&self, world: Vec2) -> Vec2 {
-		self.virtual_size / 2.0 + (world - self.position)
+	pub fn world_to_screen(&self, ctx: &ggez::Context, world: Vec2) -> Vec2 {
+		let window_size = ctx.gfx.drawable_size();
+		let screen_center = Vec2::new(window_size.0 / 2.0, window_size.1 / 2.0);
+
+		screen_center + (world - self.position)
 	}
 }

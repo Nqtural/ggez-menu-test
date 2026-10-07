@@ -1,4 +1,3 @@
-use ggez::glam::Vec2;
 use ggez::graphics::{Canvas, Color, DrawMode, Mesh, Rect};
 use ggez::winit::keyboard::{Key, NamedKey};
 use ggez::{Context, GameResult};
@@ -10,9 +9,9 @@ use crate::ui::camera::Camera;
 use crate::ui::menu::MenuView;
 
 pub struct GameState {
-	player: Player,
-	map: TileMap,
 	camera: Camera,
+	map: TileMap,
+	player: Player,
 }
 
 impl GameState {
@@ -23,10 +22,12 @@ impl GameState {
 			map.set(x, 8, Tile::Grass);
 		}
 
+		let player = Player::default();
+
 		Self {
-			player: Player::default(),
+			camera: Camera::new(player.position),
 			map,
-			camera: Camera::new(Vec2::new(640.0, 360.0)),
+			player,
 		}
 	}
 }
@@ -43,9 +44,9 @@ impl View for GameState {
 	fn draw(&self, ctx: &mut Context, canvas: &mut Canvas) -> GameResult {
 		self.map.draw(ctx, canvas, &self.camera)?;
 
-		let player_position = self.camera.world_to_screen(self.player.position);
+		let player_screen = self.camera.world_to_screen(ctx, self.player.position);
 
-		canvas.draw(&player_sprite(ctx)?, player_position);
+		canvas.draw(&player_sprite(ctx)?, player_screen);
 
 		Ok(())
 	}

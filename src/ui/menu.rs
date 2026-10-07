@@ -55,18 +55,19 @@ impl View for MenuView {
 		const FONT_SIZE: f32 = 32.0;
 		const LINE_GAP: f32 = 32.0;
 
+		let window_size = ctx.gfx.drawable_size();
+
 		let background = Mesh::new_rectangle(
 			ctx,
 			DrawMode::fill(),
-			Rect::new(0.0, 0.0, 800.0, 600.0),
+			Rect::new(0.0, 0.0, window_size.0, window_size.1),
 			Color::from_rgba(0, 0, 0, 200),
 		)?;
 		canvas.draw(&background, Vec2::ZERO);
 
-		let center = 300.0;
 		let len = self.items.len() as f32;
 		let height = (len * FONT_SIZE) + ((len - 1.0) * LINE_GAP);
-		let start = center - (height / 2.0);
+		let start = (window_size.1 / 2.0) - (height / 2.0);
 		for (index, item) in self.items.iter().enumerate() {
 			canvas.draw(
 				&Text::new(TextFragment::new(item.to_string()).scale(FONT_SIZE).color(
@@ -77,7 +78,7 @@ impl View for MenuView {
 					},
 				)),
 				DrawParam::default()
-					.dest([400.0, start + (index as f32 * LINE_GAP)])
+					.dest([window_size.0 / 2.0, start + (index as f32 * LINE_GAP)])
 					.offset([0.5, 0.0]),
 			);
 		}

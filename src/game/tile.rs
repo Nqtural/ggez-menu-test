@@ -66,7 +66,7 @@ impl TileMap {
 	}
 
 	pub fn draw(&self, ctx: &mut Context, canvas: &mut Canvas, camera: &Camera) -> GameResult {
-		let half = camera.virtual_size / 2.0;
+		let half = Vec2::from(ctx.gfx.drawable_size()) / 2.0;
 
 		let left = camera.position.x - half.x;
 		let right = camera.position.x + half.x;
@@ -87,7 +87,7 @@ impl TileMap {
 
 				let world_position = Vec2::new(x as f32 * TILE_SIZE, y as f32 * TILE_SIZE);
 
-				let screen_position = camera.world_to_screen(world_position);
+				let screen_position = camera.world_to_screen(ctx, world_position);
 
 				let mesh = Mesh::new_rectangle(
 					ctx,
