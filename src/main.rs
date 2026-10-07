@@ -12,7 +12,7 @@ pub fn main() -> GameResult {
 	let cb = ggez::ContextBuilder::new("g", "Nqtural");
 	let (ctx, event_loop) = cb.build()?;
 
-	let state = ViewState::new(GameState::default());
+	let state = ViewState::new(GameState::new());
 
 	event::run(ctx, event_loop, state)
 }

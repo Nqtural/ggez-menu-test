@@ -3,33 +3,50 @@ use ggez::graphics::{Canvas, Color, DrawMode, Mesh, Rect};
 use ggez::winit::keyboard::{Key, NamedKey};
 use ggez::{Context, GameResult};
 
+use crate::game::tile::{Tile, TileMap};
 use crate::game::view::{View, ViewAction};
 use crate::player::Player;
+use crate::ui::camera::Camera;
 use crate::ui::menu::MenuView;
 
-#[derive(Default)]
 pub struct GameState {
 	player: Player,
+	map: TileMap,
+	camera: Camera,
+}
+
+impl GameState {
+	pub fn new() -> Self {
+		let mut map = TileMap::new(50, 50, Tile::Grass);
+
+		for x in 5..15 {
+			map.set(x, 8, Tile::Grass);
+		}
+
+		Self {
+			player: Player::default(),
+			map,
+			camera: Camera::new(Vec2::new(640.0, 360.0)),
+		}
+	}
 }
 
 impl View for GameState {
 	fn update(&mut self, ctx: &mut Context) -> GameResult<ViewAction> {
 		let dt = ctx.time.delta().as_secs_f32();
 		self.player.update(dt);
+		self.camera.update(self.player.position, dt);
 
 		Ok(ViewAction::None)
 	}
 
 	fn draw(&self, ctx: &mut Context, canvas: &mut Canvas) -> GameResult {
-		let background = Mesh::new_rectangle(
-			ctx,
-			DrawMode::fill(),
-			Rect::new(0.0, 0.0, 800.0, 600.0),
-			Color::from_rgba(0, 200, 0, 128),
-		)?;
-		canvas.draw(&background, Vec2::ZERO);
+		self.map.draw(ctx, canvas, &self.camera)?;
 
-		canvas.draw(&player_sprite(ctx)?, self.player.position);
+		let player_position = self.camera.world_to_screen(self.player.position);
+
+		canvas.draw(&player_sprite(ctx)?, player_position);
+
 		Ok(())
 	}
 
@@ -74,7 +91,7 @@ fn player_sprite(ctx: &mut Context) -> GameResult<Mesh> {
 	Mesh::new_rectangle(
 		ctx,
 		DrawMode::fill(),
-		Rect::new(0.0, 0.0, 20.0, 20.0),
+		Rect::new(-10.0, -10.0, 20.0, 20.0),
 		Color::from_rgb(255, 0, 0),
 	)
 }
