@@ -9,7 +9,7 @@ impl Camera {
 	pub fn new(position: Vec2) -> Self {
 		Self {
 			position,
-			smoothing: 10.0,
+			smoothing: 5.0,
 		}
 	}
 
